@@ -1,0 +1,20 @@
+{
+    "name": "Go DevContainer",
+    "image": "golang:latest",
+    "customizations": {
+      "vscode": {
+        "extensions": [
+          "golang.go",
+          "vscodevim.vim"
+        ]
+      }
+    },
+    "features": {
+      "golang": "latest"
+    }
+    // "extensions": [
+    //   "golang.go"
+    // ],
+    // "workspaceMount": "source=${localWorkspaceFolder},target=/go/src/app,type=bind,consistency=cached"
+  }
+  
