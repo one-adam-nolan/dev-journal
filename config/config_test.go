@@ -50,6 +50,10 @@ func Test_setdir_updates_config_file(t *testing.T) {
 		t.Logf("Directory Updated Successfully: %s", directory)
 	}
 
+	deleteConfigFile()
+	initConfig()
+	t.Logf("Reset config file")
+
 }
 
 func deleteConfigFile() string {

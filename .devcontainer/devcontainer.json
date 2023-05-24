@@ -12,9 +12,5 @@
     "features": {
       "golang": "latest"
     }
-    // "extensions": [
-    //   "golang.go"
-    // ],
-    // "workspaceMount": "source=${localWorkspaceFolder},target=/go/src/app,type=bind,consistency=cached"
   }
   

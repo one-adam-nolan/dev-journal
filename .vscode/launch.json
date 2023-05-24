@@ -27,6 +27,14 @@
             "mode": "auto",
             "program": "${fileDirname}",
             "args": ["addbullet", "Adding An bullet"],
+        },
+        {
+            "name": "No Commands",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${fileDirname}",
+            "args": ["config"],
         }
     ]
 }
