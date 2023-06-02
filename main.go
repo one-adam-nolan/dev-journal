@@ -74,6 +74,7 @@ func startDay(cmd *cobra.Command, args []string) {
 
 	filePath := directory.GetTodaysFileName(getBaseDirectory())
 
+	//TODO: Move to directory module
 	_, err = os.Stat(filePath)
 	if err == nil {
 		fmt.Println("Journal entry already exists for today")
