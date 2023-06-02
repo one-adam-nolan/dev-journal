@@ -3,14 +3,16 @@ package main
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 	"time"
 
+	"github.com/alecthomas/chroma/quick"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
 	"dev-journal/add"
 	"dev-journal/config"
+	"dev-journal/directory"
+	"dev-journal/tui"
 )
 
 func main() {
@@ -28,12 +30,26 @@ func main() {
 		Run:   startDay,
 	}
 
+	todayCmd := &cobra.Command{
+		Use:   "today",
+		Short: "Prints activity for the current day",
+		Run:   printToday,
+	}
+
+	tuiCmd := &cobra.Command{
+		Use:   "tui",
+		Short: "Open todays file in a TUI",
+		Run:   displayTui,
+	}
+
 	configCmd := &cobra.Command{
 		Use:   "config",
 		Short: "Manage configuration settings",
 	}
 
 	rootCmd.AddCommand(startdayCmd)
+	rootCmd.AddCommand(todayCmd)
+	rootCmd.AddCommand(tuiCmd)
 	rootCmd.AddCommand(configCmd)
 
 	err := rootCmd.Execute()
@@ -43,44 +59,20 @@ func main() {
 	}
 }
 
-// extract helper
-func getTodaysFileName() string {
-
-	thisMonthsFolder := getThisMonthsFolder()
-
-	fileName := fmt.Sprintf("%s.md", time.Now().Format("02-Monday"))
-
-	return filepath.Join(thisMonthsFolder, fileName)
-}
-
-// extract helper
-func getThisMonthsFolder() string {
-	folderPath := viper.GetString("directory")
-
-	thisMonthsFolder := filepath.Join(folderPath, time.Now().Format("January-2006"))
-
-	return thisMonthsFolder
-}
-
-// extract helper
-func checkDirectory() error {
-	thisMonthsFolder := getThisMonthsFolder()
-
-	err := os.MkdirAll(thisMonthsFolder, os.ModePerm)
-
-	return err
+func getBaseDirectory() string {
+	return viper.GetString("directory")
 }
 
 func startDay(cmd *cobra.Command, args []string) {
 	now := time.Now()
 
-	err := checkDirectory()
+	err := directory.CheckDirectory(getBaseDirectory())
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
 
-	filePath := getTodaysFileName()
+	filePath := directory.GetTodaysFileName(getBaseDirectory())
 
 	_, err = os.Stat(filePath)
 	if err == nil {
@@ -103,6 +95,33 @@ func startDay(cmd *cobra.Command, args []string) {
 	}
 
 	fmt.Printf("Journal entry created for %s-%s-%s\n", now.Format("02"), now.Format("Jan"), now.Format("2006"))
+}
+
+func printToday(cmd *cobra.Command, args []string) {
+
+	filePath := directory.GetTodaysFileName(getBaseDirectory())
+
+	content, err := os.ReadFile(filePath)
+	if err != nil {
+		fmt.Printf("Error reading file: %s\n", err)
+		os.Exit(1)
+	}
+
+	_ = quick.Highlight(os.Stdout, string(content), "markdown", "terminal16m", "monokai")
+}
+
+func displayTui(cmd *cobra.Command, args []string) {
+	content, err := directory.GetTodaysFileContent(getBaseDirectory())
+	if err != nil {
+		fmt.Printf("Error reading file: %s\n", err)
+	}
+
+	app := tui.DisplayTodayModal(string(content))
+
+	// Run the application
+	if err := app.Display(); err != nil {
+		panic(err)
+	}
 }
 
 func init() {

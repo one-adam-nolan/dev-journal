@@ -11,6 +11,4 @@ func Test_addbullet(t *testing.T) {
 	rootCmd := &cobra.Command{}
 	config.InitConfig(rootCmd)
 
-	
-
 }
