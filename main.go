@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"time"
 
@@ -12,6 +13,7 @@ import (
 	"dev-journal/add"
 	"dev-journal/config"
 	"dev-journal/directory"
+	"dev-journal/show"
 	"dev-journal/tui"
 )
 
@@ -23,17 +25,12 @@ func main() {
 
 	config.InitConfig(rootCmd)
 	add.InitConfig(rootCmd)
+	show.InitConfig(rootCmd)
 
 	startdayCmd := &cobra.Command{
 		Use:   "startday",
 		Short: "Start a new journal entry for the day",
 		Run:   startDay,
-	}
-
-	todayCmd := &cobra.Command{
-		Use:   "today",
-		Short: "Prints activity for the current day",
-		Run:   printToday,
 	}
 
 	tuiCmd := &cobra.Command{
@@ -48,13 +45,12 @@ func main() {
 	}
 
 	rootCmd.AddCommand(startdayCmd)
-	rootCmd.AddCommand(todayCmd)
 	rootCmd.AddCommand(tuiCmd)
 	rootCmd.AddCommand(configCmd)
 
 	err := rootCmd.Execute()
 	if err != nil {
-		fmt.Println(err)
+		log.Fatalf(err.Error())
 		os.Exit(1)
 	}
 }
@@ -112,12 +108,9 @@ func printToday(cmd *cobra.Command, args []string) {
 }
 
 func displayTui(cmd *cobra.Command, args []string) {
-	content, err := directory.GetTodaysFileContent(getBaseDirectory())
-	if err != nil {
-		fmt.Printf("Error reading file: %s\n", err)
-	}
+	filePath := getBaseDirectory()
 
-	app := tui.DisplayTodayModal(string(content))
+	app := tui.DisplayTodayModal(filePath)
 
 	// Run the application
 	if err := app.Display(); err != nil {

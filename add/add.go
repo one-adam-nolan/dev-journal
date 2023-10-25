@@ -1,6 +1,7 @@
 package add
 
 import (
+	"dev-journal/directory"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -37,7 +38,9 @@ func InitConfig(rootCmd *cobra.Command) {
 }
 
 func addEntry(cmd *cobra.Command, args []string) error {
-	filepath := getTodaysFileName()
+	folderPath := viper.GetString("directory")
+	filepath := directory.GetTodaysFileName(folderPath)
+	// filepath := getTodaysFileName()
 
 	//Check if file exists
 	if _, err := os.Stat(filepath); os.IsNotExist(err) {

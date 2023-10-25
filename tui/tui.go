@@ -4,8 +4,8 @@ type Displayable interface {
 	Display() error
 }
 
-func DisplayTodayModal(content string) Displayable {
+func DisplayTodayModal(filePath string) Displayable {
 	return &TextModalWithQandEscLowerBar{
-		Content: content,
+		FilePath: filePath,
 	}
 }

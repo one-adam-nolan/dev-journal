@@ -30,6 +30,22 @@ func GetTodaysFileContent(baseDirectory string) ([]byte, error) {
 	return os.ReadFile(filePath)
 }
 
+func GetFileContentFromDate(date string, baseDirectory string) ([]byte, error) {
+	monthPath := getThisMonthsFolder(baseDirectory)
+
+	d, err := time.Parse("01/02/2006", date)
+	if err != nil {
+		fmt.Printf("Unable to parse date provided: %s", err.Error())
+		os.Exit(1)
+	}
+
+	path := filepath.Join(monthPath, d.Format("02-Monday")) + ".md"
+
+	fmt.Printf("DATE: %s \n", path)
+
+	return os.ReadFile(path)
+}
+
 func getThisMonthsFolder(baseDirectory string) string {
 	thisMonthsFolder := filepath.Join(baseDirectory, time.Now().Format("January-2006"))
 
