@@ -42,6 +42,7 @@ func addEntry(cmd *cobra.Command, args []string) error {
 	filepath := directory.GetTodaysFileName(folderPath)
 	// filepath := getTodaysFileName()
 
+	//TODO: switch this to the addlogic module stuff
 	//Check if file exists
 	if _, err := os.Stat(filepath); os.IsNotExist(err) {
 		fmt.Println("Journal entry file not found")
