@@ -2,8 +2,10 @@ package directory
 
 import (
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
+	"sort"
 	"time"
 )
 
@@ -48,6 +50,22 @@ func GetFileContentFromDate(date string, baseDirectory string) ([]byte, error) {
 
 func GetContentForFile(path string) ([]byte, error) {
 	return os.ReadFile(path)
+}
+
+func GetFolderContents(path string) ([]fs.DirEntry, error) {
+	return os.ReadDir(path)
+}
+
+func SortDescendingByLastModified(fileItems []fs.DirEntry) []fs.DirEntry {
+	sort.SliceStable(fileItems, func(i, j int) bool {
+		first, _ := fileItems[i].Info()
+
+		second, _ := fileItems[j].Info()
+
+		return first.ModTime().After(second.ModTime())
+	})
+
+	return fileItems
 }
 
 func getThisMonthsFolder(baseDirectory string) string {

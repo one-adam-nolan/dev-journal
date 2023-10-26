@@ -5,9 +5,7 @@ import (
 	"dev-journal/pkg/addlogic"
 	"dev-journal/pkg/controls"
 	"fmt"
-	"os"
 	"path/filepath"
-	"sort"
 	"strings"
 
 	"log"
@@ -17,6 +15,7 @@ import (
 )
 
 const (
+	MAIN       = "main"
 	ADD_ENTRY  = "input-entry"
 	ADD_BULLET = "input-bulet"
 	HISTORY    = "history"
@@ -99,7 +98,7 @@ func (d *TextModalWithQandEscLowerBar) Display() error {
 		d.App,
 	)
 
-	d.Pages.AddPage("main", grid, true, true)
+	d.Pages.AddPage(MAIN, grid, true, true)
 
 	d.App.SetRoot(d.Pages, true).SetFocus(d.ContentTxtView)
 
@@ -222,21 +221,13 @@ func (d *TextModalWithQandEscLowerBar) getHistoryPage() *tview.Flex {
 
 		currentFolder = mainText
 
-		dirItems, err := os.ReadDir(filepath.Join(d.FilePath, mainText))
+		dirItems, err := directory.GetFolderContents(filepath.Join(d.FilePath, currentFolder))
 		if err != nil {
 			log.Printf("%s", err)
 			files.AddItem(fmt.Sprintf("%s", err), "", 0, nil)
 		}
 
-		sort.SliceStable(dirItems, func(i, j int) bool {
-			first, _ := dirItems[i].Info()
-
-			second, _ := dirItems[j].Info()
-
-			return first.ModTime().After(second.ModTime())
-		})
-
-		for _, d := range dirItems {
+		for _, d := range directory.SortDescendingByLastModified(dirItems) {
 			if !d.IsDir() && !strings.HasSuffix(d.Name(), "swp") {
 				files.AddItem(d.Name(), d.Type().String(), 0, nil)
 			}
@@ -258,34 +249,30 @@ func (d *TextModalWithQandEscLowerBar) getHistoryPage() *tview.Flex {
 			fileContent = string(c)
 		}
 
-		// fmt.Printf("Setting Content: %s", content)
 		content.SetText(fileContent)
 	})
 
 	files.SetSelectedFunc(func(i int, s1, s2 string, r rune) {
-		d.App.SetFocus(folderList)
+		d.App.SetFocus(content)
 	})
 
-	// folderList.AddItem("Folder-A", "", 0, func() {})
+	content.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		if event.Key() == tcell.KeyEnter {
+			d.App.SetFocus(folderList)
+		}
+		return event
+	})
 
 	flex.AddItem(folderList, 0, 1, true)
 	flex.AddItem(files, 0, 1, false)
 	flex.AddItem(content, 0, 3, false)
 
-	item, err := os.ReadDir(d.FilePath)
+	item, err := directory.GetFolderContents(d.FilePath)
 	if err != nil {
 		fmt.Printf("%s \n", err)
 	}
 
-	sort.SliceStable(item, func(i, j int) bool {
-		first, _ := item[i].Info()
-
-		second, _ := item[j].Info()
-
-		return first.ModTime().After(second.ModTime())
-	})
-
-	for _, f := range item {
+	for _, f := range directory.SortDescendingByLastModified(item) {
 		if f.IsDir() && string(f.Name()[0]) != "." {
 			folderList.AddItem(f.Name(), "", 0, func() {})
 		}
