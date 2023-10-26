@@ -40,28 +40,19 @@ func (d *TextModalWithQandEscLowerBar) Display() error {
 	d.Pages = tview.NewPages()
 
 	d.ContentTxtView = tview.NewTextView().
-		SetDynamicColors(true)
+		SetDynamicColors(true).
+		SetTextStyle(tcell.StyleDefault.
+			Foreground(tcell.Color111).
+			Background(tcell.Color234))
 
 	d.UpdateContent()
-
-	statusBar := tview.NewTextView()
-	statusBar.SetText("(q) or esc to quit")
-	statusBar.SetTextColor(tcell.ColorOrangeRed)
-	statusBar.SetBackgroundColor(tcell.ColorGray)
-
-	// Set the key event handler to close the window on "Esc" or "q" key press
-	statusBar.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-		if event.Key() == tcell.KeyEscape || event.Rune() == 'q' {
-			app.Stop()
-		}
-		return event
-	})
 
 	addEntryBtn := controls.GetButton("Add Entry", func() {
 		d.Pages.AddAndSwitchToPage(ADD_ENTRY, d.getAddEntyForm(), true)
 	})
 
 	addBulletBtn := controls.GetButton("Add Bullet", func() {
+		d.Pages.AddAndSwitchToPage(ADD_BULLET, d.getAddBulletForm(), true)
 	})
 
 	exitBtn := controls.GetButton("Exit", func() {
@@ -70,16 +61,17 @@ func (d *TextModalWithQandEscLowerBar) Display() error {
 
 	// Create a grid layout to hold the text view and status bar
 	grid := tview.NewGrid().
-		SetRows(-100, -5, -1).
+		SetRows(-100, 3).
 		SetColumns(-1, -1, -1).
 		AddItem(d.ContentTxtView, 0, 0, 1, 3, 1, 1, true).
-		AddItem(addEntryBtn, 1, 0, 1, 1, 1, 1, false).
-		AddItem(addBulletBtn, 1, 1, 1, 1, 1, 1, false).
-		AddItem(exitBtn, 1, 2, 1, 1, 1, 1, false).
-		AddItem(statusBar, 2, 0, 1, 3, 1, 1, false)
+		AddItem(addEntryBtn, 1, 0, 1, 1, 10, 1, false).
+		AddItem(addBulletBtn, 1, 1, 1, 1, 10, 1, false).
+		AddItem(exitBtn, 1, 2, 1, 1, 1, 10, false)
+		// AddItem(statusBar, 2, 0, 1, 3, 1, 1, false)
 
 	tabItems := []interface{}{
-		statusBar,
+		// statusBar,
+		d.ContentTxtView,
 		addEntryBtn,
 		addBulletBtn,
 		exitBtn,
@@ -93,7 +85,7 @@ func (d *TextModalWithQandEscLowerBar) Display() error {
 
 	d.Pages.AddPage("main", grid, true, true)
 
-	app.SetRoot(d.Pages, true).SetFocus(statusBar)
+	app.SetRoot(d.Pages, true).SetFocus(d.ContentTxtView)
 
 	return app.Run()
 }
@@ -123,13 +115,6 @@ func (d *TextModalWithQandEscLowerBar) getAddEntyForm() *tview.Form {
 			return
 		}
 
-		if len(strings.Trim(value, "\n")) == 0 {
-			d.appModalToPage(ADD_ENTRY, "Blank lines are no good homie")
-			value = ""
-			form.GetFormItemByLabel("Title").(*tview.TextArea).SetText("", false)
-			return
-		}
-
 		err := addlogic.AddEntryToFile(directory.GetTodaysFileName(d.FilePath), value)
 		if err != nil {
 			d.appModalToPage(ADD_ENTRY, err.Error())
@@ -140,6 +125,45 @@ func (d *TextModalWithQandEscLowerBar) getAddEntyForm() *tview.Form {
 
 	form.AddButton("Cancel", func() {
 		d.Pages.RemovePage(ADD_ENTRY)
+	})
+
+	return form
+}
+
+func (d *TextModalWithQandEscLowerBar) getAddBulletForm() *tview.Form {
+	value := ""
+	form := tview.NewForm().
+		AddTextArea("Message", value, 100, 10, 500, func(text string) {
+			value = text
+		}).
+		AddTextView("Description", "This adds a bullet underneath a header", 100, 1, true, false)
+
+	form.SetBorder(true).SetTitle("Add Entry AKA dj add entry").SetTitleAlign(tview.AlignCenter)
+	form.AddButton("Submit", func() {
+		defer d.UpdateContent()
+
+		if len(value) <= 0 {
+			d.appModalToPage(ADD_BULLET, "You gotta' have some text my dude")
+			return
+		}
+
+		if len(strings.Trim(value, "\n")) == 0 {
+			d.appModalToPage(ADD_BULLET, "Blank lines are no good homie")
+			value = ""
+			form.GetFormItemByLabel("Message").(*tview.TextArea).SetText("", false)
+			return
+		}
+
+		err := addlogic.AddBulletToFile(directory.GetTodaysFileName(d.FilePath), value)
+		if err != nil {
+			d.appModalToPage(ADD_BULLET, err.Error())
+		}
+
+		d.Pages.RemovePage(ADD_BULLET)
+	})
+
+	form.AddButton("Cancel", func() {
+		d.Pages.RemovePage(ADD_BULLET)
 	})
 
 	return form

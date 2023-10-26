@@ -7,8 +7,8 @@ import (
 
 var btnStyle tcell.Style = tcell.StyleDefault.
 	Foreground(tcell.Color164).
-	Background(tcell.Color234).
-	Attributes(tcell.AttrUnderline)
+	Background(tcell.Color234)
+	// Attributes(tcellwhicih .AttrUnderline)
 
 func GetButton(txt string, action func()) *tview.Button {
 	btn := tview.NewButton(txt).
