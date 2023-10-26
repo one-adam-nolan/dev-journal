@@ -5,7 +5,12 @@ import (
 	"dev-journal/pkg/addlogic"
 	"dev-journal/pkg/controls"
 	"fmt"
+	"os"
+	"path/filepath"
+	"sort"
 	"strings"
+
+	"log"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
@@ -14,12 +19,19 @@ import (
 const (
 	ADD_ENTRY  = "input-entry"
 	ADD_BULLET = "input-bulet"
+	HISTORY    = "history"
+)
+
+var (
+	currentFolder string = ""
+	currentFile   string = ""
 )
 
 type TextModalWithQandEscLowerBar struct {
 	FilePath       string
 	Pages          *tview.Pages
 	ContentTxtView *tview.TextView
+	App            *tview.Application
 }
 
 func (d *TextModalWithQandEscLowerBar) UpdateContent() {
@@ -27,7 +39,7 @@ func (d *TextModalWithQandEscLowerBar) UpdateContent() {
 }
 
 func (d *TextModalWithQandEscLowerBar) Display() error {
-	app := tview.NewApplication()
+	d.App = tview.NewApplication()
 	tview.Styles = tview.Theme{
 		PrimitiveBackgroundColor:   tcell.Color234,
 		PrimaryTextColor:           tcell.Color164,
@@ -56,38 +68,42 @@ func (d *TextModalWithQandEscLowerBar) Display() error {
 	})
 
 	exitBtn := controls.GetButton("Exit", func() {
-		app.Stop()
+		d.App.Stop()
+	})
+
+	historyBtn := controls.GetButton("History", func() {
+		d.Pages.AddAndSwitchToPage(HISTORY, d.getHistoryPage(), true)
 	})
 
 	// Create a grid layout to hold the text view and status bar
 	grid := tview.NewGrid().
-		SetRows(-100, 3).
+		SetRows(-100, 3, 3).
 		SetColumns(-1, -1, -1).
 		AddItem(d.ContentTxtView, 0, 0, 1, 3, 1, 1, true).
 		AddItem(addEntryBtn, 1, 0, 1, 1, 10, 1, false).
 		AddItem(addBulletBtn, 1, 1, 1, 1, 10, 1, false).
-		AddItem(exitBtn, 1, 2, 1, 1, 1, 10, false)
-		// AddItem(statusBar, 2, 0, 1, 3, 1, 1, false)
+		AddItem(exitBtn, 1, 2, 1, 1, 1, 10, false).
+		AddItem(historyBtn, 2, 0, 1, 3, 1, 10, false)
 
 	tabItems := []interface{}{
-		// statusBar,
 		d.ContentTxtView,
 		addEntryBtn,
 		addBulletBtn,
 		exitBtn,
+		historyBtn,
 	}
 
 	controls.NewTabControl(
 		tabItems,
 		grid,
-		app,
+		d.App,
 	)
 
 	d.Pages.AddPage("main", grid, true, true)
 
-	app.SetRoot(d.Pages, true).SetFocus(d.ContentTxtView)
+	d.App.SetRoot(d.Pages, true).SetFocus(d.ContentTxtView)
 
-	return app.Run()
+	return d.App.Run()
 }
 
 func (d *TextModalWithQandEscLowerBar) mustGetTodaysFileText() string {
@@ -178,4 +194,102 @@ func (d *TextModalWithQandEscLowerBar) appModalToPage(pageName string, msg strin
 		})
 
 	d.Pages.AddPage("modal", modal, false, true)
+}
+
+func (d *TextModalWithQandEscLowerBar) getHistoryPage() *tview.Flex {
+	flex := tview.NewFlex()
+
+	flex.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		if event.Key() == tcell.KeyEsc {
+			d.Pages.RemovePage(HISTORY)
+		}
+
+		return event
+	})
+
+	folderList := tview.NewList().ShowSecondaryText(false)
+	folderList.SetBorder(true).SetTitle("Folders")
+
+	files := tview.NewList().ShowSecondaryText(false)
+	files.SetBorder(true).SetTitle("Files")
+	files.ShowSecondaryText(false)
+
+	content := tview.NewTextView()
+	content.SetBorder(true).SetTitle("Content")
+
+	folderList.SetChangedFunc(func(index int, mainText, secondaryText string, shortcut rune) {
+		files.Clear()
+
+		currentFolder = mainText
+
+		dirItems, err := os.ReadDir(filepath.Join(d.FilePath, mainText))
+		if err != nil {
+			log.Printf("%s", err)
+			files.AddItem(fmt.Sprintf("%s", err), "", 0, nil)
+		}
+
+		sort.SliceStable(dirItems, func(i, j int) bool {
+			first, _ := dirItems[i].Info()
+
+			second, _ := dirItems[j].Info()
+
+			return first.ModTime().After(second.ModTime())
+		})
+
+		for _, d := range dirItems {
+			if !d.IsDir() && !strings.HasSuffix(d.Name(), "swp") {
+				files.AddItem(d.Name(), d.Type().String(), 0, nil)
+			}
+		}
+	})
+
+	folderList.SetSelectedFunc(func(i int, s1, s2 string, r rune) {
+		d.App.SetFocus(files)
+	})
+
+	files.SetChangedFunc(func(index int, mainText, secondaryText string, shortcut rune) {
+		currentFile = mainText
+
+		var fileContent string
+		c, err := directory.GetContentForFile(filepath.Join(d.FilePath, currentFolder, currentFile))
+		if err != nil {
+			fileContent = fmt.Sprintf("Error: %s", err)
+		} else {
+			fileContent = string(c)
+		}
+
+		// fmt.Printf("Setting Content: %s", content)
+		content.SetText(fileContent)
+	})
+
+	files.SetSelectedFunc(func(i int, s1, s2 string, r rune) {
+		d.App.SetFocus(folderList)
+	})
+
+	// folderList.AddItem("Folder-A", "", 0, func() {})
+
+	flex.AddItem(folderList, 0, 1, true)
+	flex.AddItem(files, 0, 1, false)
+	flex.AddItem(content, 0, 3, false)
+
+	item, err := os.ReadDir(d.FilePath)
+	if err != nil {
+		fmt.Printf("%s \n", err)
+	}
+
+	sort.SliceStable(item, func(i, j int) bool {
+		first, _ := item[i].Info()
+
+		second, _ := item[j].Info()
+
+		return first.ModTime().After(second.ModTime())
+	})
+
+	for _, f := range item {
+		if f.IsDir() && string(f.Name()[0]) != "." {
+			folderList.AddItem(f.Name(), "", 0, func() {})
+		}
+	}
+
+	return flex
 }

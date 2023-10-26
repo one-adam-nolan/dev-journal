@@ -46,6 +46,10 @@ func GetFileContentFromDate(date string, baseDirectory string) ([]byte, error) {
 	return os.ReadFile(path)
 }
 
+func GetContentForFile(path string) ([]byte, error) {
+	return os.ReadFile(path)
+}
+
 func getThisMonthsFolder(baseDirectory string) string {
 	thisMonthsFolder := filepath.Join(baseDirectory, time.Now().Format("January-2006"))
 
