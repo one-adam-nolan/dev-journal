@@ -2,10 +2,8 @@ package add
 
 import (
 	"dev-journal/directory"
+	"dev-journal/pkg/addlogic"
 	"fmt"
-	"os"
-	"path/filepath"
-	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -38,84 +36,28 @@ func InitConfig(rootCmd *cobra.Command) {
 }
 
 func addEntry(cmd *cobra.Command, args []string) error {
-	folderPath := viper.GetString("directory")
-	filepath := directory.GetTodaysFileName(folderPath)
-	// filepath := getTodaysFileName()
+	filepath := directory.GetTodaysFileName(viper.GetString("directory"))
 
-	//TODO: switch this to the addlogic module stuff
-	//Check if file exists
-	if _, err := os.Stat(filepath); os.IsNotExist(err) {
-		fmt.Println("Journal entry file not found")
-		return nil
-	}
-
-	f, err := os.OpenFile(filepath, os.O_APPEND|os.O_WRONLY, os.ModePerm)
+	err := addlogic.AddEntryToFile(filepath, args[0])
 	if err != nil {
-		return err
+		fmt.Printf("Unable to add entry: %s\n", err)
+	} else {
+		fmt.Printf("Added entry: %s\n", filepath)
 	}
-
-	defer f.Close()
-
-	timestamp := time.Now().Format("15:04")
-	entry := fmt.Sprintf("\n\n## %s\n\n### %s", timestamp, args[0])
-
-	if _, err = f.WriteString(entry); err != nil {
-		return err
-	}
-
-	fmt.Printf("Added entry to %s\n", filepath)
 
 	return nil
 }
 
 func addBullet(cmd *cobra.Command, args []string) error {
-	f, err := openFile()
+	filepath := directory.GetTodaysFileName(viper.GetString("directory"))
+
+	err := addlogic.AddBulletToFile(filepath, args[0])
 	if err != nil {
-		return err
+		fmt.Printf("Unable to add entry: %s\n", err)
+	} else {
+		fmt.Printf("Added bullet: %s\n", args[0])
+
 	}
-
-	defer f.Close()
-
-	timestamp := time.Now().Format("15:04")
-	entry := fmt.Sprintf("\n* %s- %s", timestamp, args[0])
-
-	if _, err = f.WriteString(entry); err != nil {
-		return err
-	}
-
-	fmt.Printf("Added entry %s\n", entry)
 
 	return nil
-}
-
-// extract helper
-func getTodaysFileName() string {
-
-	thisMonthsFolder := getThisMonthsFolder()
-
-	fileName := fmt.Sprintf("%s.md", time.Now().Format("02-Monday"))
-
-	return filepath.Join(thisMonthsFolder, fileName)
-}
-
-// extract helper
-func getThisMonthsFolder() string {
-	folderPath := viper.GetString("directory")
-
-	thisMonthsFolder := filepath.Join(folderPath, time.Now().Format("January-2006"))
-
-	return thisMonthsFolder
-}
-
-// extract helper
-func openFile() (*os.File, error) {
-	filepath := getTodaysFileName()
-
-	// Check if file exists
-	if _, err := os.Stat(filepath); os.IsNotExist(err) {
-		fmt.Println("Journal entry file not found")
-		return nil, err
-	}
-
-	return os.OpenFile(filepath, os.O_APPEND|os.O_WRONLY, os.ModePerm)
 }

@@ -14,6 +14,7 @@ const (
 	ADD_ENTRY  = "input-entry"
 	ADD_BULLET = "input-bulet"
 	HISTORY    = "history"
+	MODAL      = "modal"
 )
 
 var (
@@ -76,13 +77,9 @@ func (d *TextModalWithQandEscLowerBar) Display() error {
 
 	d.UpdateContent()
 
-	addEntryBtn := controls.GetButton("Add Entry", func() {
-		d.Pages.AddAndSwitchToPage(ADD_ENTRY, d.getAddEntyForm(), true)
-	})
+	addEntryBtn := d.getNavigationButton("Add Entry", ADD_ENTRY, d.getAddEntyForm)
 
-	addBulletBtn := controls.GetButton("Add Bullet", func() {
-		d.Pages.AddAndSwitchToPage(ADD_BULLET, d.getAddBulletForm(), true)
-	})
+	addBulletBtn := d.getNavigationButton("Add Bullet", ADD_BULLET, d.getAddBulletForm)
 
 	exitBtn := controls.GetButton("Exit", func() {
 		d.App.Stop()
@@ -123,6 +120,12 @@ func (d *TextModalWithQandEscLowerBar) Display() error {
 	return d.App.Run()
 }
 
+func (d *TextModalWithQandEscLowerBar) getNavigationButton(title string, tag string, targetFunc func() *tview.Form) *tview.Button {
+	return controls.GetButton(title, func() {
+		d.Pages.AddAndSwitchToPage(tag, targetFunc(), true)
+	})
+}
+
 func (d *TextModalWithQandEscLowerBar) mustGetTodaysFileText() string {
 	content, err := directory.GetTodaysFileContent(d.FilePath)
 	if err != nil {
@@ -136,8 +139,8 @@ func (d *TextModalWithQandEscLowerBar) appModalToPage(msg string) {
 		SetText(msg).
 		AddButtons([]string{"ok"}).
 		SetDoneFunc(func(buttonIndex int, buttonLabel string) {
-			d.Pages.RemovePage("modal")
+			d.Pages.RemovePage(MODAL)
 		})
 
-	d.Pages.AddPage("modal", modal, false, true)
+	d.Pages.AddPage(MODAL, modal, false, true)
 }

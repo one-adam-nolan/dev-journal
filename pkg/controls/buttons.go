@@ -56,7 +56,3 @@ func NewTabControl(
 		App:      app,
 	}
 }
-
-func (tab *TviewTabControl) Next() {
-
-}
