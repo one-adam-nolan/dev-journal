@@ -8,11 +8,8 @@ import (
 	"github.com/rivo/tview"
 )
 
-var (
-	value = ""
-)
-
 func (d *TextModalWithQandEscLowerBar) getAddBulletForm() *tview.Form {
+	value := ""
 	form := tview.NewForm().
 		AddTextArea("Message", value, 100, 10, 500, func(text string) {
 			value = text
@@ -28,7 +25,9 @@ func (d *TextModalWithQandEscLowerBar) getAddBulletForm() *tview.Form {
 			return
 		}
 
-		if len(strings.Trim(value, "\n")) == 0 {
+		value = strings.Trim(value, "\n")
+
+		if len(value) == 0 {
 			d.appModalToPage("Blank lines are no good homie")
 			value = ""
 			form.GetFormItemByLabel("Message").(*tview.TextArea).SetText("", false)
