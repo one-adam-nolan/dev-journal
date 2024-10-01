@@ -1,11 +1,12 @@
 package tui
 
 import (
-	"dev-journal/directory"
 	"fmt"
 	"log"
 	"path/filepath"
 	"strings"
+
+	"dj/directory"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
@@ -32,7 +33,6 @@ func NewHistoryPage(parent Parent) *HistoryPage {
 }
 
 func (hp *HistoryPage) Create() *tview.Flex {
-
 	hp.setupFolderList()
 
 	hp.setupFileList()

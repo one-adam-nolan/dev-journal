@@ -1,10 +1,11 @@
 package show
 
 import (
-	"dev-journal/directory"
 	"fmt"
 	"os"
 	"time"
+
+	"dj/directory"
 
 	"github.com/alecthomas/chroma/quick"
 	"github.com/spf13/cobra"
@@ -31,7 +32,7 @@ func InitConfig(rootCmd *cobra.Command) {
 		Run:     printDate,
 	}
 
-	var showRootCmd = &cobra.Command{
+	showRootCmd := &cobra.Command{
 		Use:   "show",
 		Short: "Displays content from a journal entry",
 	}
@@ -43,7 +44,6 @@ func InitConfig(rootCmd *cobra.Command) {
 }
 
 func printToday(cmd *cobra.Command, args []string) {
-
 	filePath := directory.GetTodaysFileName(getBaseDirectory())
 
 	content, err := os.ReadFile(filePath)
@@ -61,7 +61,6 @@ func printYesterday(cmd *cobra.Command, args []string) {
 			AddDate(0, 0, -1).
 			Format("01/02/2006"),
 		getBaseDirectory())
-
 	if err != nil {
 		fmt.Printf("Unable to open file, are you sure there are entries for that date? \n")
 		fmt.Printf("Error reading file: %s\n", err)
@@ -72,7 +71,6 @@ func printYesterday(cmd *cobra.Command, args []string) {
 }
 
 func printDate(cmd *cobra.Command, args []string) {
-
 	content, err := directory.GetFileContentFromDate(args[0], getBaseDirectory())
 	if err != nil {
 		fmt.Printf("Unable to open file, are you sure there are entries for that date? \n")

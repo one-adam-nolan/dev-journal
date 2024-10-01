@@ -6,15 +6,16 @@ import (
 	"os"
 	"time"
 
+	"dj/tui"
+
 	"github.com/alecthomas/chroma/quick"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"dev-journal/add"
-	"dev-journal/config"
-	"dev-journal/directory"
-	"dev-journal/show"
-	"dev-journal/tui"
+	"dj/add"
+	"dj/config"
+	"dj/directory"
+	"dj/show"
 )
 
 func main() {
@@ -70,7 +71,7 @@ func startDay(cmd *cobra.Command, args []string) {
 
 	filePath := directory.GetTodaysFileName(getBaseDirectory())
 
-	//TODO: Move to directory module
+	// TODO: Move to directory module
 	_, err = os.Stat(filePath)
 	if err == nil {
 		fmt.Println("Journal entry already exists for today")
@@ -95,7 +96,6 @@ func startDay(cmd *cobra.Command, args []string) {
 }
 
 func printToday(cmd *cobra.Command, args []string) {
-
 	filePath := directory.GetTodaysFileName(getBaseDirectory())
 
 	content, err := os.ReadFile(filePath)

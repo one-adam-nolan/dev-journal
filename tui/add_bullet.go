@@ -1,9 +1,10 @@
 package tui
 
 import (
-	"dev-journal/directory"
-	"dev-journal/pkg/addlogic"
 	"strings"
+
+	"dj/directory"
+	"dj/pkg/addlogic"
 
 	"github.com/rivo/tview"
 )

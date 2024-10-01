@@ -1,33 +1,37 @@
 package add
 
 import (
-	"dev-journal/directory"
-	"dev-journal/pkg/addlogic"
 	"fmt"
+
+	"dj/pkg/addlogic"
+
+	"dj/directory"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
 func InitConfig(rootCmd *cobra.Command) {
-
 	addEntryCmd := &cobra.Command{
-		Use:   "entry [entry]",
-		Short: "Append a new entry to today's markdown file",
-		Args:  cobra.ExactArgs(1),
-		RunE:  addEntry,
+		Use:     "entry [entry]",
+		Aliases: []string{"e"},
+		Short:   "Append a new entry to today's markdown file",
+		Args:    cobra.ExactArgs(1),
+		RunE:    addEntry,
 	}
 
 	addBulletCmd := &cobra.Command{
-		Use:   "bullet [bullet]",
-		Short: "Append a new bullet to the most recent entry",
-		Args:  cobra.ExactArgs(1),
-		RunE:  addBullet,
+		Use:     "bullet [bullet]",
+		Aliases: []string{"b"},
+		Short:   "Append a new bullet to the most recent entry",
+		Args:    cobra.ExactArgs(1),
+		RunE:    addBullet,
 	}
 
-	var addCmd = &cobra.Command{
-		Use:   "add",
-		Short: "Add an entry or a bullet point",
+	addCmd := &cobra.Command{
+		Use:     "add",
+		Aliases: []string{"a"},
+		Short:   "Add an entry or a bullet point",
 	}
 
 	addCmd.AddCommand(addEntryCmd, addBulletCmd)
@@ -56,7 +60,6 @@ func addBullet(cmd *cobra.Command, args []string) error {
 		fmt.Printf("Unable to add entry: %s\n", err)
 	} else {
 		fmt.Printf("Added bullet: %s\n", args[0])
-
 	}
 
 	return nil

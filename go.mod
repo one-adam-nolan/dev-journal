@@ -1,4 +1,4 @@
-module dev-journal
+module dj
 
 go 1.20
 

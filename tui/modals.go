@@ -1,9 +1,11 @@
 package tui
 
 import (
-	"dev-journal/directory"
-	"dev-journal/pkg/controls"
 	"fmt"
+
+	"dj/pkg/controls"
+
+	"dj/directory"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"

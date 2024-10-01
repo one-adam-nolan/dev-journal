@@ -1,8 +1,9 @@
 package add
 
 import (
-	"dev-journal/config"
 	"testing"
+
+	"dj/config"
 
 	"github.com/spf13/cobra"
 )
@@ -10,5 +11,4 @@ import (
 func Test_addbullet(t *testing.T) {
 	rootCmd := &cobra.Command{}
 	config.InitConfig(rootCmd)
-
 }
