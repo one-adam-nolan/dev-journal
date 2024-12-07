@@ -1,13 +1,13 @@
 package tui
 
 import (
-	"dev-journal/directory"
 	"fmt"
 	"log"
 	"path/filepath"
 	"strings"
 
 	"github.com/gdamore/tcell/v2"
+	"github.com/one-adam-nolan/dev-journal/directory"
 	"github.com/rivo/tview"
 )
 

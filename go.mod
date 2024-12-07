@@ -1,4 +1,4 @@
-module dev-journal
+module github.com/one-adam-nolan/dev-journal
 
 go 1.20
 

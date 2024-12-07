@@ -1,12 +1,12 @@
 package show
 
 import (
-	"dev-journal/directory"
 	"fmt"
 	"os"
 	"time"
 
 	"github.com/alecthomas/chroma/quick"
+	"github.com/one-adam-nolan/dev-journal/directory"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )

@@ -1,9 +1,9 @@
 package add
 
 import (
-	"dev-journal/config"
 	"testing"
 
+	"github.com/one-adam-nolan/dev-journal/cmds/config"
 	"github.com/spf13/cobra"
 )
 
