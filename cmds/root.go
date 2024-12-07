@@ -5,6 +5,7 @@ import (
 	"github.com/one-adam-nolan/dev-journal/cmds/config"
 	"github.com/one-adam-nolan/dev-journal/cmds/show"
 	"github.com/one-adam-nolan/dev-journal/cmds/startday"
+	"github.com/one-adam-nolan/dev-journal/cmds/tui"
 	"github.com/spf13/cobra"
 )
 
@@ -23,4 +24,5 @@ func init() {
 	show.InitConfig(rootCmd)
 
 	rootCmd.AddCommand(startday.StartdayCmd)
+	rootCmd.AddCommand(tui.TuiCmd)
 }
