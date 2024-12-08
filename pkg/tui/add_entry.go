@@ -1,8 +1,8 @@
 package tui
 
 import (
-	"github.com/one-adam-nolan/dev-journal/directory"
 	"github.com/one-adam-nolan/dev-journal/pkg/addlogic"
+	"github.com/one-adam-nolan/dev-journal/pkg/directory"
 	"github.com/rivo/tview"
 )
 

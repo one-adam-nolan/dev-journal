@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/alecthomas/chroma/quick"
-	"github.com/one-adam-nolan/dev-journal/directory"
+	"github.com/one-adam-nolan/dev-journal/pkg/directory"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )

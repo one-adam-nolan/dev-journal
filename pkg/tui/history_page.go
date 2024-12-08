@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/gdamore/tcell/v2"
-	"github.com/one-adam-nolan/dev-journal/directory"
+	"github.com/one-adam-nolan/dev-journal/pkg/directory"
 	"github.com/rivo/tview"
 )
 
