@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"dj/directory"
+	"dj/internal/directory"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"

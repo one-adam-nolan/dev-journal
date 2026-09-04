@@ -5,7 +5,7 @@ import (
 
 	"dj/pkg/addlogic"
 
-	"dj/directory"
+	"dj/internal/directory"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"

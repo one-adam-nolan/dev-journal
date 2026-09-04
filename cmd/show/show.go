@@ -5,7 +5,7 @@ import (
 	"os"
 	"time"
 
-	"dj/directory"
+	"dj/internal/directory"
 
 	"github.com/alecthomas/chroma/quick"
 	"github.com/spf13/cobra"

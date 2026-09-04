@@ -1,7 +1,7 @@
 package tui
 
 import (
-	"dj/directory"
+	"dj/internal/directory"
 	"dj/pkg/addlogic"
 
 	"github.com/rivo/tview"

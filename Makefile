@@ -1,3 +1,3 @@
 .PHONY: install
 install:
-	go install -v -x 
+	go install -v .

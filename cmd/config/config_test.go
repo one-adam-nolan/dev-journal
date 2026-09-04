@@ -23,8 +23,14 @@ func Test_initConfig_creates_config(t *testing.T) {
 
 	directory := viper.GetString("directory")
 
-	if directory != "/root/Documents/Dev-Journal" {
-		t.Fatalf("Incorrect directory in config file")
+	home, err := os.UserHomeDir()
+	if err != nil {
+		t.Fatalf("Failed to get home directory: %s", err)
+	}
+	expected := filepath.Join(home, "Documents", "Dev-Journal")
+
+	if directory != expected {
+		t.Fatalf("Incorrect directory in config file: got %q, want %q", directory, expected)
 	} else {
 		t.Logf("Directory set properly at: %s", directory)
 	}

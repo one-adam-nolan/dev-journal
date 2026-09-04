@@ -3,7 +3,7 @@ package add
 import (
 	"testing"
 
-	"dj/config"
+	"dj/cmd/config"
 
 	"github.com/spf13/cobra"
 )

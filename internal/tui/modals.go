@@ -5,7 +5,7 @@ import (
 
 	"dj/pkg/controls"
 
-	"dj/directory"
+	"dj/internal/directory"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
