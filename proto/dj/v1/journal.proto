@@ -1,0 +1,99 @@
+syntax = "proto3";
+
+package dj.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "dj/gen/go/dj/v1;djv1";
+
+// JournalDay represents a single daily markdown journal file.
+message JournalDay {
+  google.protobuf.Timestamp date = 1;
+  string file_path = 2;
+  bytes content = 3;
+}
+
+message StartDayRequest {}
+
+message StartDayResponse {
+  string file_path = 1;
+  bool created = 2;
+}
+
+message AddEntryRequest {
+  string text = 1;
+}
+
+message AddEntryResponse {
+  string file_path = 1;
+}
+
+message AddBulletRequest {
+  string text = 1;
+}
+
+message AddBulletResponse {
+  string file_path = 1;
+}
+
+message GetDayRequest {
+  oneof selector {
+    google.protobuf.Timestamp date = 1;
+    bool today = 2;
+    bool yesterday = 3;
+    string date_string = 4;
+  }
+}
+
+message GetDayResponse {
+  JournalDay day = 1;
+}
+
+message FolderRename {
+  string old_path = 1;
+  string new_path = 2;
+}
+
+message MigrateFoldersRequest {
+  string root = 1;
+  bool dry_run = 2;
+}
+
+message MigrateFoldersResponse {
+  repeated FolderRename renames = 1;
+}
+
+message ListMonthFoldersRequest {}
+
+message ListMonthFoldersResponse {
+  repeated string folder_names = 1;
+}
+
+message ListFilesRequest {
+  string month_folder = 1;
+}
+
+message ListFilesResponse {
+  repeated string file_names = 1;
+}
+
+message ReadFileRequest {
+  string month_folder = 1;
+  string file_name = 2;
+}
+
+message ReadFileResponse {
+  bytes content = 1;
+}
+
+// JournalService defines journal operations for CLI and future Connect RPC use.
+service JournalService {
+  rpc StartDay(StartDayRequest) returns (StartDayResponse);
+  rpc AddEntry(AddEntryRequest) returns (AddEntryResponse);
+  rpc AddBullet(AddBulletRequest) returns (AddBulletResponse);
+  rpc GetDay(GetDayRequest) returns (GetDayResponse);
+  rpc MigrateFolders(MigrateFoldersRequest) returns (MigrateFoldersResponse);
+  rpc ListMonthFolders(ListMonthFoldersRequest) returns (ListMonthFoldersResponse);
+  rpc ListFiles(ListFilesRequest) returns (ListFilesResponse);
+  rpc ReadFile(ReadFileRequest) returns (ReadFileResponse);
+}

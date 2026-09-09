@@ -51,3 +51,6 @@ Chosen option: "{option}", because {justification}.
 | ADR | Title | Status |
 |-----|-------|--------|
 | [0001](0001-project-layout-internal-pkg-cmd.md) | Project layout (internal/pkg/cmd) | accepted |
+| [0002](0002-journal-folder-naming-yyyy-mmm.md) | Journal folder naming (YYYY-MMM) | accepted |
+| [0003](0003-tiered-architecture-buf-di.md) | Tiered architecture, Buf, and dependency injection | accepted |
+| [0004](0004-multi-surface-monorepo.md) | Multi-surface monorepo layout (CLI, backend, web) | accepted |

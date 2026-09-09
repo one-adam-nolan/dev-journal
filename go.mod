@@ -1,14 +1,16 @@
 module dj
 
-go 1.20
+go 1.25.0
 
 require (
+	connectrpc.com/connect v1.21.0
 	github.com/alecthomas/chroma v0.10.0
 	github.com/gdamore/tcell/v2 v2.6.0
 	github.com/gookit/color v1.5.3
 	github.com/rivo/tview v0.0.0-20230511053024-822bd067b165
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/viper v1.15.0
+	google.golang.org/protobuf v1.36.12
 )
 
 require (

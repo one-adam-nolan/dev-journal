@@ -29,13 +29,14 @@ This project solves a few problems:
 | `dj tui` | Open today's journal in an interactive terminal UI |
 | `dj config setdir <path>` | Set the journal directory |
 | `dj config print` | Print the current config file |
+| `dj migrate folders [--dry-run] [path]` | Rename legacy `Month-Year` folders to `YYYY-MMM` |
 
 Configuration is stored at `~/.djconfig` (TOML). On first run, a default journal directory of `~/Documents/Dev-Journal` is created.
 
 ## Installing
 
 ```bash
-go build -o dj .
+make build-cli
 sudo mv dj /usr/local/bin
 ```
 
@@ -45,53 +46,70 @@ Or use the Makefile:
 make install
 ```
 
-> If you use `go install` it will put the binary in `$GOBIN`, which may make it so the autocompletion does not work properly.
+Build the backend server:
+
+```bash
+make build-server
+./dj-server
+```
+
+> If you use `go install ./cli` it will put the binary in `$GOBIN`, which may make it so the autocompletion does not work properly.
 
 ## Codebase
 
-Go module: `dj` (Go 1.20+). Built with [Cobra](https://cobra.dev/docs/) for CLI commands, [Viper](https://github.com/spf13/viper) for config, [tview](https://github.com/rivo/tview) for the TUI, and [chroma](https://github.com/alecthomas/chroma) for markdown syntax highlighting.
+Go module: `dj` (Go 1.20+). Built with [Cobra](https://cobra.dev/docs/) for CLI commands, [Viper](https://github.com/spf13/viper) for config, [Buf](https://github.com/bufbuild/buf) for protobuf schemas, [Connect](https://connectrpc.com/) for RPC contracts, [tview](https://github.com/rivo/tview) for the TUI, and [chroma](https://github.com/alecthomas/chroma) for markdown syntax highlighting.
 
 ```
 dev-journal/
-├── main.go              # thin entry point → cmd.Execute()
-├── cmd/                 # Cobra command definitions
-│   ├── root.go          # root command wiring
-│   ├── add/             # add entry / add bullet
-│   ├── config/          # setdir, print
-│   ├── show/            # today, yesterday, date
-│   ├── startday/        # create today's file
-│   └── tui/             # launch TUI
-├── internal/            # app-specific, not importable externally
-│   ├── directory/       # journal file paths, reads, folder listing
-│   ├── tui/             # TUI implementation (modals, forms, history)
-│   └── logs/            # colored logger (unused, reserved)
-├── pkg/                 # shareable libraries
-│   ├── addlogic/        # append entries/bullets to markdown files
-│   └── controls/        # reusable tview button/tab helpers
+├── proto/dj/v1/         # shared protobuf contract (CLI, backend, web)
+├── gen/go/dj/v1/        # generated Go types and Connect handlers
+├── gen/ts/              # future web client output
+├── cli/                 # dj CLI binary
+│   ├── main.go
+│   ├── cmd/             # Cobra commands
+│   ├── internal/        # CLI-only app wiring, TUI, display
+│   └── pkg/controls/    # tview helpers
+├── backend/             # dj-server Connect HTTP server
+│   ├── cmd/server/
+│   └── internal/
+├── web/                 # future browser client
+├── internal/            # shared domain (journal, config, logs)
 └── docs/
-    ├── plans/           # implementation plans
-    └── ADRs/            # architectural decision records
+    ├── plans/
+    └── ADRs/
 ```
 
-Journal files are organized as `YYYY-MM/<DD-DayName>.md` (e.g. `2026-09/04-Thursday.md`) under the configured directory.
+Journal files are organized as `YYYY-MMM/<DD-DayName>.md` (e.g. `2026-Sep/04-Friday.md`) under the configured directory.
+
+### Architecture
+
+Shared domain logic lives in root `internal/journal`. CLI wiring is in `cli/internal/app`; backend wiring is in `backend/internal/app`. Both reuse the same protobuf contract in `proto/dj/v1/` and Connect handler in `internal/journal`.
 
 ### Key packages
 
-- **`cmd/`** — thin Cobra handlers; parse args, call into `internal/` or `pkg/`
-- **`internal/directory`** — file naming, directory creation, content reads, folder sorting
-- **`internal/tui`** — full-screen modal UI for viewing and editing today's journal
-- **`pkg/addlogic`** — markdown append logic (`## HH:MM` entries, `* HH:MM-` bullets)
-- **`pkg/controls`** — tview button styling and tab-focus navigation
+- **`cli/cmd/`** — thin Cobra handlers
+- **`cli/internal/app`** — CLI composition root
+- **`cli/internal/tui`** — terminal UI
+- **`backend/cmd/server`** — Connect HTTP server entrypoint
+- **`internal/journal`** — shared use cases, filesystem store, Connect adapter
+- **`internal/config`** — Viper config provider
 
-See [ADR-0001](docs/ADRs/0001-project-layout-internal-pkg-cmd.md) for the rationale behind this layout.
+See [ADR-0004](docs/ADRs/0004-multi-surface-monorepo.md) for the multi-surface layout, [ADR-0003](docs/ADRs/0003-tiered-architecture-buf-di.md) for tiered architecture and Buf, and [ADR-0001](docs/ADRs/0001-project-layout-internal-pkg-cmd.md) for original package layout.
 
 ## Development
 
+Install Buf (for proto changes):
+
 ```bash
-go build .
-go test ./...
+brew install bufbuild/buf/buf
+```
+
+```bash
+make generate   # buf generate (also runs before test/build)
+make test
+make build      # builds dj and dj-server
 go fmt ./...
-go run . --help
+go run ./cli --help
 ```
 
 Code follows [Effective Go](https://go.dev/doc/effective_go) conventions. See [AGENTS.md](AGENTS.md) for agent-specific style rules.

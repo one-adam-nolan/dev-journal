@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package dj.v1;
+
+option go_package = "dj/gen/go/dj/v1;djv1";
+
+// Config holds user-facing journal configuration.
+message Config {
+  string journal_directory = 1;
+}

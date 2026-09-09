@@ -4,28 +4,33 @@ Instructions for AI coding agents working on dev-journal.
 
 ## Project overview
 
-dev-journal (`dj`) is a Go CLI for daily markdown work journals. Users create daily files, append timestamped entries and bullets, view past logs, and interact via a terminal UI.
+dev-journal (`dj`) is a Go monorepo for daily markdown work journals — CLI today, backend server, and web client planned. Users create daily files, append timestamped entries and bullets, view past logs, and interact via a terminal UI.
 
 - **Module:** `dj` (Go 1.20+)
-- **CLI framework:** Cobra — commands live under `cmd/`, root wiring in `cmd/root.go`
+- **Surfaces:** `cli/` (dj), `backend/` (dj-server), `web/` (future)
+- **Shared domain:** `internal/journal`, `internal/config`, `internal/logs`
+- **Contract:** protobuf in `proto/dj/v1/`, generated Go in `gen/go/`
+- **CLI framework:** Cobra — commands live under `cli/cmd/`
 - **Config:** Viper, TOML file at `~/.djconfig`
-- **TUI:** tview/tcell in `internal/tui`
-- **Layout:** `cmd/` (commands), `internal/` (app code), `pkg/` (shareable libs) — see [ADR-0001](docs/ADRs/0001-project-layout-internal-pkg-cmd.md)
+- **TUI:** tview/tcell in `cli/internal/tui`
+- **Layout:** see [ADR-0004](docs/ADRs/0004-multi-surface-monorepo.md)
 
 ## Setup commands
 
-- Install binary: `make install` or `go install -v .`
-- Build locally: `go build -o dj .`
-- Run CLI: `go run . --help`
+- Install CLI: `make install` or `go install ./cli`
+- Build CLI: `make build-cli` or `go build -o dj ./cli`
+- Build server: `make build-server` or `go build -o dj-server ./backend/cmd/server`
+- Run CLI: `go run ./cli --help`
+- Run server: `go run ./backend/cmd/server`
 - Dev Container: open in VS Code with `.devcontainer/`
 
 ## Testing instructions
 
-- Run all tests: `go test ./...`
-- Run tests for a specific package: `go test ./cmd/config/...`
-- Verify build after changes: `go build .`
-- Smoke test CLI: `go run . --help`
-- Config tests write to `~/.djconfig` — they clean up after themselves but require a writable home directory
+- Run all tests: `make test` or `go test ./...`
+- Run tests for a specific package: `go test ./cli/cmd/config/...`
+- Verify build after changes: `make build`
+- Smoke test CLI: `go run ./cli --help`
+- Config tests use isolated temp directories via `NewViperProviderWithConfigDir` — they do not modify `~/.djconfig`
 
 Add or update tests when changing command behavior or `pkg/` / `internal/` logic.
 
@@ -46,8 +51,8 @@ Follow [Effective Go](https://go.dev/doc/effective_go) for idiomatic Go. Highlig
 Project-specific rules:
 
 - Match existing conventions in the file you are editing
-- Keep `cmd/` handlers thin — business logic belongs in `internal/` or `pkg/`
-- App-specific code goes in `internal/`, shareable code in `pkg/`
+- Keep `cli/cmd/` handlers thin — business logic belongs in `internal/journal` or surface-specific `cli/internal/`
+- Shared domain code goes in root `internal/`; CLI-only code in `cli/internal/`; backend wiring in `backend/internal/`
 - New Cobra commands go under `cmd/` as their own package
 - Do not add comments for obvious code; comment non-obvious business logic only
 - Minimize scope — avoid unrelated changes in the same diff
@@ -73,6 +78,15 @@ Project-specific rules:
 - Implementation plans: `docs/plans/`
 - Update `README.md` when adding user-facing commands or changing install steps
 - Add an ADR when making structural or technology choices worth recording
+
+## Planning and architectural decisions
+
+When working on a non-trivial feature or structural change:
+
+1. **Write a plan** in `docs/plans/` (kebab-case filename). If a plan was drafted in Cursor, copy the final version into `docs/plans/` before implementation begins.
+2. **Write an ADR** in `docs/ADRs/` when the change involves a significant design choice (new conventions, layout changes, technology swaps, breaking behavior). Use the next sequential number and MADR minimal format. Update the index in `docs/ADRs/README.md`.
+3. **Cross-link** the ADR and plan (ADR → plan in Related; plan → ADR at the top).
+4. **Update `README.md`** when the change is user-facing (new commands, install steps, file layout).
 
 ## Security considerations
 
